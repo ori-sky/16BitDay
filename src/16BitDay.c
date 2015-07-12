@@ -23,9 +23,17 @@ static void MainWindowUnload(Window *window) {
 static void Tick(struct tm *time, TimeUnits delta) {
 	static char buffer[] = "00000000\n00000000";
 	unsigned int seconds = time->tm_sec + time->tm_min * 60 + time->tm_hour * 60 * 60;
-	unsigned short tickles = seconds * 65536 / SECONDS_IN_DAY;
+	float tickles = seconds * 65536.0f / SECONDS_IN_DAY;
+	unsigned short currentTickle = tickles;
+	float toNext = currentTickle + 1 - tickles;
+
+	if(toNext > 0.0f) {
+		psleep(toNext * 1000.0f);
+		++currentTickle;
+	}
+
 	for(unsigned char i = 0; i < 16; ++i) {
-		buffer[i + i / 8] = tickles / (1 << (15 - i)) % 2
+		buffer[i + i / 8] = currentTickle / (1 << (15 - i)) % 2
 		                  ? '1' : '0';
 	}
 	text_layer_set_text(timeLayer, buffer);
