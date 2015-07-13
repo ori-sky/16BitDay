@@ -3,21 +3,29 @@
 #define SECONDS_IN_DAY (86400)
 
 static Window *mainWindow;
+static BitmapLayer *backgroundLayer;
+static GBitmap *backgroundBitmap;
 static TextLayer *timeLayer;
 
 static void MainWindowLoad(Window *window) {
-	timeLayer = text_layer_create(GRect(0, 55, 144, 100));
-	text_layer_set_background_color(timeLayer, GColorClear);
-	text_layer_set_text_color(timeLayer, GColorWhite);
+	backgroundBitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
+	backgroundLayer = bitmap_layer_create(GRect(18, 56, 144, 168));
+	bitmap_layer_set_bitmap(backgroundLayer, backgroundBitmap);
 
-	text_layer_set_font(timeLayer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
+	timeLayer = text_layer_create(GRect(0, 0, 144, 100));
+	text_layer_set_background_color(timeLayer, GColorClear);
+	text_layer_set_text_color(timeLayer, GColorBlack);
+	text_layer_set_font(timeLayer, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
 	text_layer_set_text_alignment(timeLayer, GTextAlignmentCenter);
 
+	layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(backgroundLayer));
 	layer_add_child(window_get_root_layer(window), text_layer_get_layer(timeLayer));
 }
 
 static void MainWindowUnload(Window *window) {
 	text_layer_destroy(timeLayer);
+	bitmap_layer_destroy(backgroundLayer);
+	gbitmap_destroy(backgroundBitmap);
 }
 
 static void Tick(struct tm *time, TimeUnits delta) {
@@ -48,8 +56,6 @@ static void Init() {
 	});
 
 	window_stack_push(mainWindow, true);
-
-	window_set_background_color(mainWindow, GColorBlack);
 
 	tick_timer_service_subscribe(SECOND_UNIT, Tick);
 }
